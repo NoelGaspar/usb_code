@@ -303,7 +303,7 @@ class CCD_230_42(_CCD):
 		'PC1D' : _default_clock_params['CLK3D']['clockId'],  # SEQ22  # A4 B4 Parallel Clock Down
 		'PC2D' : _default_clock_params['CLK2D']['clockId'],  # SEQ19  # A1 B1 Parallel Clock Down
 		'PC3D' : _default_clock_params['CLK1C']['clockId'],  # SEQ20  # A2 B2 Parallel Clock Down
-		'PC4D' : _default_clock_params['CLK3C']['clockId'],  # SEQ18  # A3 B3 Parallel Clock Down
+		'PC4D' : _default_clock_params['CLK2C']['clockId'],  # SEQ18  # A3 B3 Parallel Clock Down
 		'PC1U' : _default_clock_params['CLK1D']['clockId'],  # SEQ01  # C1 D1 Parallel Clock Up
 		'PC2U' : _default_clock_params['CLK8B']['clockId'],  # SEQ03  # C2 D2 Parallel Clock Up
 		'PC3U' : _default_clock_params['CLK3C']['clockId'],  # SEQ05  # C3 D3 Parallel Clock Up

@@ -25,7 +25,7 @@ _success_cache = '\x55'*4 + '\x00'*(512 - 4);     # It reads 512 bytes at once
 
 
 ## USB/DEBUG. In debug mode, the program doesn't try to connect to the real USB camera.
-USB_MODE = False
+USB_MODE = True
 VERBOSE  = True   # Print everything
 
 if USB_MODE:
@@ -129,6 +129,36 @@ class Camera:
 				if(hasattr(self, 'on_disconnect_fn')):
 					self.on_disconnect_fn();
 
+	## Enable regulators for debug
+	#
+	# @warning Look at the Camera class warning
+	#
+	# @param self An instance of Camera
+	def camera_on(self, context, device, event):
+		formatter = self.formatter;
+		line = formatter.enable_sequencer();
+
+
+		if USB_MODE:
+			with usbEasy.Device(vid = self._vid, pid = self._pid, context = self.context) as dev:
+				port_write = dev.open_port(self._write_address);
+				port_read  = dev.open_port(self._read_address);
+				if VERBOSE:
+					self.log.info( 'Sending: (len ' + str(len(line)) + ') '+ formatter.as_legacy_file([line]) );
+				successful_transfers += port_write.write_sync(line);
+				if VERBOSE:
+					self.log.info( 'Sent [bytes]: ' + str(successful_transfers) )
+				response = port_read.read_sync(1024)
+				if VERBOSE:
+					self.log.info( 'Received: ' + str(response) )
+				if(response == _success_cache):
+					self.log.info('Received SUCCESS !', 10);
+				else:
+					self.log.error('Received ERROR !: (len ' + str(len(response)) + ') ' + str(list(response[:4])), 1);
+		else:
+			self.log.info( 'Sending: (len ' + str(len(line)) + ') '+ formatter.as_legacy_file([line]) );
+	
+
 
 	## Configure the camera ccd for current self.ccd settings.
 	#
@@ -153,7 +183,7 @@ class Camera:
 					successful_transfers += port_write.write_sync(line);
 					if VERBOSE:
 						self.log.info( 'Sent [bytes]: ' + str(successful_transfers) )
-					response = port_read.read_sync(512);
+					response = port_read.read_sync(1024)
 					if VERBOSE:
 						self.log.info( 'Received: ' + str(response) )
 					if(response == _success_cache):
@@ -183,7 +213,8 @@ class Camera:
 		# Get image (get the mode name then transform it to the sequencer memory address)
 		stop_cleaning_mode_name    = self.ccd.get_stop_cleaning_mode_name();
 		stop_cleaning_mode_address = self.ccd.get_configured_program().get_address(stop_cleaning_mode_name);
-		get_image_mode_name        = self.ccd.get_get_image_mode_name();
+		get_image_mode_name        = self.ccd.get_test_serial_clocks_mode_name();
+		#test: get_image_mode_name        = self.ccd.get_get_image_mode_name();
 		get_image_mode_address     = self.ccd.get_configured_program().get_address(get_image_mode_name);
 		get_image_bytecode         = formatter.get_image(stop_cleaning_mode_address, get_image_mode_address, open_shutter=self.shutter.open);
 
@@ -201,14 +232,14 @@ class Camera:
 				line = write_exposition_time_bytecode
 				self.log.info( 'Sending: (len ' + str(len(line)) + ') '+ formatter.as_legacy_file([line]) );
 				successful_transfer = port_write.write_sync(line);
-				response0 = port_read.read_sync(512);
-				if(response0 != _success_cache):
-					self.log.error( 'Could not set exposition time, response: ' + str(response1) );
-					return np.array([]);
+				response0 = port_read.read_sync(1024);
+				##if (response0 != _success_cache):
+				##	self.log.error( 'Could not set exposition time, response: ' + str(response0) );
+				##	return np.array([]);
 
 				# Instance image reader
 				port_read = dev.open_port(self._read_address, 100);
-				async_reader = port_read.read_async(512);
+				async_reader = port_read.read_async(1024);
 
 				# Send Get Image command (stop cleaning, start exposition, and retrieve the captured image)
 				line = get_image_bytecode

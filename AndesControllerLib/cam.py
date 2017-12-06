@@ -134,11 +134,11 @@ class Camera:
 	# @warning Look at the Camera class warning
 	#
 	# @param self An instance of Camera
-	def camera_on(self, context, device, event):
+	def camera_on(self):
 		formatter = self.formatter;
 		line = formatter.enable_sequencer();
-
-
+		
+		
 		if USB_MODE:
 			with usbEasy.Device(vid = self._vid, pid = self._pid, context = self.context) as dev:
 				port_write = dev.open_port(self._write_address);

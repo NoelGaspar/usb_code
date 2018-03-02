@@ -8,7 +8,7 @@
 # Use this module to interact with the Andes Controller
 #
 
-#hello!!
+
 import time as time;
 import six as six;
 import struct as struct;
@@ -130,14 +130,17 @@ class Camera:
 					self.on_disconnect_fn();
 
 	## Enable regulators for debug
-	#
+	# #Author: WAC
 	# @warning Look at the Camera class warning
 	#
 	# @param self An instance of Camera
-	def camera_on(self):
+	# @param state state of the enable regulartor of the AC. if 
+	# 		state= True, enable of regulator = 1;
+	#		Default power regulators = on. 
+	def camera_on(self,state= True):
 		formatter = self.formatter;
-		line = formatter.enable_sequencer();
-		
+		line = formatter.configurator_power_on(state);
+		successful_transfers = 0;		
 		
 		if USB_MODE:
 			with usbEasy.Device(vid = self._vid, pid = self._pid, context = self.context) as dev:
@@ -158,6 +161,42 @@ class Camera:
 		else:
 			self.log.info( 'Sending: (len ' + str(len(line)) + ') '+ formatter.as_legacy_file([line]) );
 	
+
+
+
+
+	# function to debbug DAC behaviour
+	# created 03-02-18 by WAC
+	#
+	def set_specific_voltaje_DAC(self, label , value = 1 ):
+		formatter = self.formatter;
+		dac_p= self.ccd._default_bias_params[label];
+		code = _dac_bias_volt_to_code(value,dac_p['voltType']);
+		line = formatter.configurator_spi_bias_clocks(dac_p[´device´], dac_p[´ polarity´] , dac_p[´nbits´], dac_p[´address´], code );
+		print line
+		successful_transfers = 0;		
+		
+		# if USB_MODE:
+		# 	with usbEasy.Device(vid = self._vid, pid = self._pid, context = self.context) as dev:
+		# 		port_write = dev.open_port(self._write_address);
+		# 		port_read  = dev.open_port(self._read_address);
+		# 		if VERBOSE:
+		# 			self.log.info( 'Sending: (len ' + str(len(line)) + ') '+ formatter.as_legacy_file([line]) );
+		# 		successful_transfers += port_write.write_sync(line);
+		# 		if VERBOSE:
+		# 			self.log.info( 'Sent [bytes]: ' + str(successful_transfers) )
+		# 		response = port_read.read_sync(1024)
+		# 		if VERBOSE:
+		# 			self.log.info( 'Received: ' + str(response) )
+		# 		if(response == _success_cache):
+		# 			self.log.info('Received SUCCESS !', 10);
+		# 		else:
+		# 			self.log.error('Received ERROR !: (len ' + str(len(response)) + ') ' + str(list(response[:4])), 1);
+		# else:
+		# 	self.log.info( 'Sending: (len ' + str(len(line)) + ') '+ formatter.as_legacy_file([line]) );
+	
+
+
 
 
 	## Configure the camera ccd for current self.ccd settings.

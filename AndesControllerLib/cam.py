@@ -172,7 +172,7 @@ class Camera:
 		formatter = self.formatter;
 		dac_p= self.ccd._default_bias_params[label];
 		code = _dac_bias_volt_to_code(value,dac_p['voltType']);
-		line = formatter.configurator_spi_bias_clocks(dac_p[´device´], dac_p[´ polarity´] , dac_p[´nbits´], dac_p[´address´], code );
+		line = formatter.configurator_spi_bias_clocks(dac_p['device'], dac_p['polarity'] , dac_p['nbits'], dac_p['address'], code );
 		print line
 		successful_transfers = 0;		
 		

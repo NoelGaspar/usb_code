@@ -170,10 +170,13 @@ class Camera:
 	#
 	def set_specific_voltaje_DAC(self, label , value = 1 ):
 		formatter = self.formatter;
-		dac_p= self.ccd._default_bias_params[label];
-		code = self.ccd._dac_bias_volt_to_code(value,dac_p['voltType']);
-		line = formatter.configurator_spi_bias_clocks(dac_p['dev'], dac_p['pol'] , dac_p['nbits'], dac_p['address'], code );
+		dac_p     = self.ccd._default_bias_params[label];
+		code      = self.ccd._dac_bias_volt_to_code(value, dac_p['voltType']);
+		line      = formatter.configurator_spi_bias_clocks(dac_p['dev'], dac_p['pol'] , dac_p['nbits'], (dac_p['address']<<16) + code );
+		
+		print formatter.as_legacy_file([line])
 		print line
+		
 		successful_transfers = 0;		
 		
 		# if USB_MODE:
